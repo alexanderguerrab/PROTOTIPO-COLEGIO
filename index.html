@@ -1,0 +1,125 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prototipo · App Escolar</title>
+<style>
+:root{--p:#0F766E;--bg:#F3F5F7;--cd:#fff;--tx:#1b2430;--mu:#667085;--bd:#e1e6ec;--ok:#15803d;--wn:#b45309;--er:#b91c1c;color-scheme:light}
+@media(prefers-color-scheme:dark){:root{--bg:#0f141b;--cd:#19212c;--tx:#e8edf3;--mu:#9aa5b4;--bd:#2b3643;--ok:#4ade80;--wn:#fbbf24;--er:#f87171;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--tx)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--bd);background:var(--cd);padding:7px 12px;border-radius:8px}
+button.pr{background:var(--p);color:#fff;border-color:var(--p)}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--p);outline-offset:2px}
+input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--cd)}
+h2{margin:0 0 12px;font-size:20px}h3{margin:0 0 8px;font-size:15px}
+#lg{min-height:100vh;display:grid;place-items:center;padding:16px;position:relative;overflow:hidden;background:linear-gradient(135deg,var(--p),#0b1220)}
+#lg video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.lb{position:relative;background:var(--cd);padding:26px;border-radius:14px;width:min(400px,100%)}
+.rl{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}.rl button.on{background:var(--p);color:#fff;border-color:var(--p)}
+header{background:var(--p);color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+header button{background:transparent;color:#fff;border-color:#fff6}
+nav{display:flex;gap:4px;overflow-x:auto;padding:8px 12px;background:var(--cd);border-bottom:1px solid var(--bd)}
+nav button{border:0;background:none;white-space:nowrap;color:var(--mu)}nav button.on{color:var(--p);font-weight:700;box-shadow:inset 0 -3px var(--p);border-radius:0}
+main{max-width:980px;margin:0 auto;padding:16px}
+.g{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.c{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}.g>.c{margin:0}
+.k{font-size:26px;font-weight:700}.mu{color:var(--mu);font-size:13px}
+table{width:100%;border-collapse:collapse}td,th{padding:8px 6px;border-bottom:1px solid var(--bd);text-align:left}th{font-size:13px;color:var(--mu)}
+.t{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;border:1px solid currentColor}
+.ok{color:var(--ok)}.wn{color:var(--wn)}.er{color:var(--er)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:1 1 140px}
+.ch{display:grid;grid-template-columns:200px 1fr;gap:12px}@media(max-width:640px){.ch{grid-template-columns:1fr}}
+.ms{height:260px;overflow:auto;display:flex;flex-direction:column;gap:6px;padding:6px}
+.b{max-width:75%;padding:7px 11px;border-radius:12px;background:var(--bg)}.b.me{align-self:flex-end;background:var(--p);color:#fff}
+.ar{padding:9px;border-radius:8px;cursor:pointer;border:1px solid var(--bd);margin-bottom:6px}.ar.on{border-color:var(--p);background:color-mix(in srgb,var(--p) 12%,transparent)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.cal div{min-height:54px;padding:3px 5px;border-radius:6px;background:var(--bg);font-size:12px}
+.cal .h{background:color-mix(in srgb,var(--er) 18%,transparent)}.cal .e{background:color-mix(in srgb,var(--p) 20%,transparent)}.cal .w{opacity:.55}.cal .d{min-height:0;background:none;text-align:center;color:var(--mu)}
+.bar{height:10px;background:var(--bg);border-radius:6px;overflow:hidden;display:flex}.bar i{display:block}
+.mb{position:fixed;inset:0;background:#0008;display:grid;place-items:center;padding:14px;z-index:9}.mc{background:var(--cd);padding:20px;border-radius:12px;width:min(420px,100%)}
+.ban{padding:12px 14px;border-radius:10px;border:1px solid currentColor;margin-bottom:12px;font-weight:600}
+#ts{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:9px 16px;border-radius:99px;z-index:10}
+@media print{header,nav,button{display:none}}
+</style></head><body><div id="app"></div><div id="m"></div>
+<script>
+const $=s=>document.querySelector(s),q=x=>x,mon=n=>'$'+n.toLocaleString('es');
+/* ===== Capa de datos simulada. Al migrar: reemplazar por llamadas a Supabase (tablas + RLS) ===== */
+const I=[{n:'Colegio Horizonte',c:'#0F766E',v:'',cap:1000,rc:true},{n:'Instituto Los Andes',c:'#4338CA',v:'',cap:1000,rc:true}];
+let inst=I[0],role='',view='',si=0,lap=2,cm=new Date(2026,9,1),ca=0,ls=false;
+const SU=['Matemática','Lengua','Ciencias','Inglés','Historia'];
+const mk=(a,b)=>Object.fromEntries(SU.map((s,i)=>[s,[a[i],b[i],null]]));
+const S=[{n:'Valeria Pérez',g:'5.º Grado A',f:'Pérez',N:mk([15,17,9,14,18],[12,16,11,15,17]),as:true},
+{n:'Mateo Pérez',g:'2.º Grado B',f:'Pérez',N:mk([18,16,17,19,15],[17,18,16,18,16]),as:true},
+{n:'Camila Rojas',g:'5.º Grado A',f:'Rojas',N:mk([8,10,9,12,11],[7,9,10,11,9]),as:true},
+{n:'Luis Díaz',g:'5.º Grado A',f:'Díaz',N:mk([13,14,15,12,16],[14,15,13,13,17]),as:true}];
+const HI=[['2025-2026 (año anterior)','4.º Grado',16.4],['2024-2025','3.º Grado',15.8],['2023-2024','2.º Grado',14.9],['2022-2023','1.er Grado',15.2]];
+const F=[{s:0,c:'Mensualidad septiembre',m:120,d:'2026-09-05',st:'pagado',rcp:'REC-1001'},{s:0,c:'Mensualidad octubre',m:120,d:'2026-10-05',st:'mora'},{s:0,c:'Mensualidad noviembre',m:120,d:'2026-11-05',st:'pendiente'},
+{s:1,c:'Mensualidad septiembre',m:120,d:'2026-09-05',st:'pagado',rcp:'REC-1002'},{s:1,c:'Mensualidad octubre',m:120,d:'2026-10-05',st:'revision',ref:'48210377',mt:'Pago móvil'},{s:1,c:'Mensualidad noviembre',m:120,d:'2026-11-05',st:'pendiente'},
+{s:2,c:'Mensualidad septiembre',m:120,d:'2026-09-05',st:'mora'},{s:2,c:'Mensualidad octubre',m:120,d:'2026-10-05',st:'mora'},
+{s:3,c:'Mensualidad septiembre',m:120,d:'2026-09-05',st:'pagado',rcp:'REC-1003'},{s:3,c:'Mensualidad octubre',m:120,d:'2026-10-05',st:'pagado',rcp:'REC-1004'}];
+let M=[{t:'Pago móvil',d:'0414-***-4567 · Banesco'},{t:'Transferencia',d:'Cta. ***8841 · Mercantil'}];
+let P=[{t:'Entrega de boletines del 1.er lapso',x:'Se realizará el 11 de diciembre. Traer cédula del representante.',g:'Académico',d:'14 oct'},{t:'Reunión de representantes 5.º grado',x:'Jueves 22 de octubre, 5:00 p. m., salón de usos múltiples.',g:'Reunión',d:'12 oct'},{t:'Jornada de vacunación',x:'Campaña gratuita de la secretaría de salud. Se requiere autorización firmada.',g:'Salud',d:'9 oct'}];
+const AR={Docentes:[['o','Buenas tardes, Valeria mejoró mucho en Matemática.']],Coordinación:[],Administración:[['o','Recuerde que puede reportar su pago desde la pestaña Pagos.']],Cobranza:[]};
+const CAL=[['2026-10-12','Día de la Resistencia Indígena','h'],['2026-10-22','Reunión de representantes','e'],['2026-12-11','Entrega de boletines','e'],['2026-12-24','Nochebuena','h'],['2026-12-25','Navidad','h'],['2026-12-31','Fin de año','h'],['2027-01-01','Año Nuevo','h'],['2027-01-15','Día del Maestro','e'],['2027-02-08','Lunes de Carnaval','h'],['2027-02-09','Martes de Carnaval','h'],['2027-03-25','Jueves Santo','h'],['2027-03-26','Viernes Santo','h'],['2027-04-19','Declaración de la Independencia','h'],['2027-05-01','Día del Trabajador','h'],['2027-06-24','Batalla de Carabobo','h'],['2027-07-05','Día de la Independencia','h'],['2027-07-24','Natalicio de Simón Bolívar','h']];
+const NAV={rep:[['ini','Inicio'],['not','Notas'],['his','Historial'],['cha','Chat'],['pag','Pagos'],['met','Métodos de pago'],['car','Cartelera'],['cal','Calendario']],
+doc:[['nd','Cargar notas'],['asi','Asistencia'],['cha','Chat'],['car','Cartelera'],['cal','Calendario']],
+adm:[['dp','Deuda'],['ver','Verificar pagos'],['car','Cartelera'],['cal','Calendario'],['cfg','Configuración']]};
+const nota=n=>n==null?'—':n,av=a=>{a=a.filter(x=>x!=null);return a.length?a.reduce((x,y)=>x+y)/a.length:null};
+const chip=n=>n==null?'':`<span class="t ${n>=10?'ok':'er'}">${n>=10?'Aprobado':'Reprobado'}</span>`;
+const stl={pagado:['ok','Pagado'],mora:['er','En mora'],pendiente:['wn','Por vencer'],revision:['wn','En revisión']};
+const tag=s=>`<span class="t ${stl[s][0]}">${stl[s][1]}</span>`;
+const fam=f=>{const x=F.filter(i=>S[i.s].f==f);return x.some(i=>i.st=='mora')?['er','En mora']:x.some(i=>i.st!='pagado')?['wn','Por vencer / en revisión']:['ok','Al día']};
+const toast=t=>{const e=document.createElement('div');e.id='ts';e.textContent=t;document.body.append(e);setTimeout(()=>e.remove(),2200)};
+const modal=h=>$('#m').innerHTML=`<div class="mb" onclick="if(event.target==this)cl()"><div class="mc">${h}</div></div>`,cl=()=>$('#m').innerHTML='';
+/* ===== Login multi-institución ===== */
+function login(){document.documentElement.style.setProperty('--p',inst.c);
+$('#app').innerHTML=`<div id="lg">${inst.v?`<video src="${inst.v}" autoplay muted loop playsinline></video>`:''}<div class="lb"><h2>${inst.n}</h2><p class="mu">Portal de representantes, docentes y administración</p>
+<label class="mu">Institución</label><select onchange="inst=I[this.value];login()">${I.map((x,i)=>`<option value="${i}" ${x==inst?'selected':''}>${x.n}</option>`).join('')}</select>
+<div class="rl">${[['rep','Representante'],['doc','Docente'],['adm','Admin']].map(r=>`<button class="${role==r[0]?'on':''}" onclick="setRole('${r[0]}')">${r[1]}</button>`).join('')}</div>
+<input placeholder="Correo" value="demo@colegio.edu" style="margin-bottom:8px"><input type="password" placeholder="Contraseña" value="••••••••">
+<button class="pr" style="width:100%;margin-top:12px" onclick="enter()">Entrar</button><p class="mu">Prototipo con datos ficticios. 2FA, cifrado reforzado y auditoría se integran en la fase de seguridad.</p></div></div>`}
+function setRole(r){role=r;login()}
+function enter(){if(!role)return toast('Elige un rol para entrar');view=NAV[role][0][0];shell()}
+function shell(){$('#app').innerHTML=`<header><b>${inst.n}</b><span class="row" style="flex:0"><span class="mu" style="color:#fffc">${{rep:'Representante',doc:'Docente',adm:'Administrador'}[role]}</span><button onclick="setRole('')">Salir</button></span></header>
+<nav>${NAV[role].map(n=>`<button class="${view==n[0]?'on':''}" onclick="view='${n[0]}';shell()">${n[1]}</button>`).join('')}</nav><main>${V[view]()}</main>`}
+const sel=()=>role!='rep'?'':`<div class="row" style="margin-bottom:12px"><select onchange="si=+this.value;shell()">${S.slice(0,2).map((s,i)=>`<option value="${i}" ${i==si?'selected':''}>${s.n} · ${s.g}</option>`).join('')}</select></div>`;
+const lt=()=>`<div class="row" style="margin-bottom:10px">${[1,2,3].map(l=>`<button class="${lap==l?'pr':''}" onclick="lap=${l};shell()">${l}.er lapso</button>`).join('')}</div>`;
+const V={
+ini(){const s=S[si],a=av(SU.map(x=>s.N[x][1])),f=fam(s.f);return sel()+`<div class="g"><div class="c"><div class="mu">Promedio 2.º lapso</div><div class="k ${a>=10?'ok':'er'}">${a.toFixed(1)}</div><div class="mu">Escala 1–20 · mínimo aprobatorio 10</div></div>
+<div class="c"><div class="mu">Estado de cuenta familiar</div><div class="k ${f[0]}">${f[1]}</div></div><div class="c"><div class="mu">Asignaturas en riesgo</div><div class="k">${SU.filter(x=>s.N[x][1]<10).length}</div></div></div>
+<div class="c" style="margin-top:12px"><h3>Últimas publicaciones</h3>${P.slice(0,2).map(p=>`<p><b>${p.t}</b><br><span class="mu">${p.x}</span></p>`).join('')}</div>`},
+not(){const s=S[si];return sel()+lt()+`<div class="c"><table><tr><th>Asignatura</th><th>Nota</th><th>Estado</th></tr>${SU.map(x=>`<tr><td>${x}</td><td><b>${nota(s.N[x][lap-1])}</b></td><td>${chip(s.N[x][lap-1])}</td></tr>`).join('')}</table>
+<p><b>Promedio del lapso: ${av(SU.map(x=>s.N[x][lap-1]))?.toFixed(1)??'—'}</b></p><button onclick="toast('Boletín PDF generado (demo)')">Descargar boletín</button></div>`},
+his(){return sel()+`<div class="c"><table><tr><th>Año escolar</th><th>Grado</th><th>Promedio final</th></tr>${HI.map(h=>`<tr><td>${h[0]}</td><td>${h[1]}</td><td><b>${(h[2]-si*.6).toFixed(1)}</b></td></tr>`).join('')}</table><button onclick="toast('Constancia generada (demo)')">Solicitar constancia de estudio</button></div>`},
+cha(){const ks=role=='rep'?Object.keys(AR):role=='doc'?['Docentes']:['Administración','Cobranza'];if(!ks.includes(ca))ca=ks[0];
+return `<div class="ch"><div>${ks.map(k=>`<div class="ar ${k==ca?'on':''}" onclick="ca='${k}';shell()"><b>${k}</b><div class="mu">${role=='rep'?'Chat dedicado':'Representantes'}</div></div>`).join('')}</div>
+<div class="c"><h3>${ca}</h3><div class="ms" id="ms">${AR[ca].map(m=>`<div class="b ${m[0]=='me'?'me':''}">${m[1]}</div>`).join('')||'<span class="mu">Aún no hay mensajes. Escribe el primero.</span>'}</div>
+<div class="row"><input id="tx" placeholder="Escribe un mensaje" onkeydown="if(event.key=='Enter')send()"><button class="pr" style="flex:0" onclick="send()">Enviar</button></div></div></div>`},
+pag(){const mine=F.map((f,i)=>[f,i]).filter(x=>S[x[0].s].f==S[si].f),f=fam(S[si].f);
+return `<div class="ban ${f[0]}">Estado: ${f[1]}</div><div class="c"><table><tr><th>Concepto</th><th>Monto</th><th>Vence</th><th>Estado</th><th></th></tr>${mine.map(([x,i])=>`<tr><td>${x.c}<div class="mu">${S[x.s].n}</div></td><td>${mon(x.m)}</td><td>${x.d}</td><td>${tag(x.st)}</td><td>${x.st=='mora'||x.st=='pendiente'?`<button class="pr" onclick="rep(${i})">Reportar pago</button>`:x.rcp&&inst.rc?`<button onclick="rec(${i})">Recibo</button>`:''}</td></tr>`).join('')}</table></div>`},
+met(){return `<div class="c"><h2>Mis métodos de pago</h2>${M.map((m,i)=>`<div class="row" style="border-bottom:1px solid var(--bd);padding:8px 0"><span><b>${m.t}</b><br><span class="mu">${m.d}</span></span><button style="flex:0" onclick="M.splice(${i},1);shell()">Quitar</button></div>`).join('')||'<p class="mu">No tienes métodos guardados. Agrega uno abajo.</p>'}
+<h3 style="margin-top:14px">Agregar método</h3><div class="row"><select id="mt"><option>Pago móvil</option><option>Transferencia</option><option>Tarjeta</option><option>Zelle</option><option>Efectivo en caja</option></select><input id="md" placeholder="Detalle (banco, teléfono, últimos dígitos)"><button class="pr" onclick="addM()">Guardar método</button></div></div>`},
+car(){return (role=='adm'?`<div class="c"><h3>Publicar anuncio</h3><div class="row"><input id="pt" placeholder="Título"><select id="pg"><option>Académico</option><option>Reunión</option><option>Salud</option><option>General</option></select></div><textarea id="px" rows="2" placeholder="Mensaje" style="margin:8px 0"></textarea><button class="pr" onclick="pub()">Publicar</button></div>`:'')+P.map(p=>`<div class="c"><span class="t" style="color:var(--p)">${p.g}</span> <span class="mu">${p.d}</span><h3 style="margin-top:6px">${p.t}</h3><div>${p.x}</div></div>`).join('')},
+cal(){const y=cm.getFullYear(),m=cm.getMonth(),fd=(new Date(y,m,1).getDay()+6)%7,dn=new Date(y,m+1,0).getDate(),ev=d=>CAL.filter(c=>c[0]==`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`);
+let h=['L','M','M','J','V','S','D'].map(d=>`<div class="d">${d}</div>`).join('')+'<div style="visibility:hidden"></div>'.repeat(fd);
+for(let d=1;d<=dn;d++){const e=ev(d)[0],w=(fd+d-1)%7>4;h+=`<div class="${e?e[2]:''} ${w?'w':''}"><b>${d}</b>${e?`<br>${e[1]}`:''}</div>`}
+return `<div class="c"><div class="row" style="margin-bottom:10px"><button onclick="cm=new Date(y0(-1));shell()">‹ Anterior</button><h3 style="text-align:center;margin:0;flex:2">${cm.toLocaleDateString('es',{month:'long',year:'numeric'})}</h3><button onclick="cm=new Date(y0(1));shell()">Siguiente ›</button></div><div class="cal">${h}</div>
+<p class="mu"><span class="t er">Feriado</span> <span class="t" style="color:var(--p)">Evento escolar</span></p></div>`},
+nd(){const g=S.filter(s=>s.g=='5.º Grado A');return lt()+`<div class="c"><h3>Matemática · 5.º Grado A · ${lap}.er lapso</h3><table>${g.map(s=>`<tr><td>${s.n}</td><td style="width:110px"><input type="number" min="1" max="20" value="${s.N['Matemática'][lap-1]??''}" onchange="gn('${s.n}',this.value)"></td></tr>`).join('')}</table><button class="pr" style="margin-top:10px" onclick="toast('Notas guardadas y registradas en auditoría')">Guardar y publicar</button><p class="mu">Rango válido 1–20. Cada cambio queda auditado.</p></div>`},
+asi(){return `<div class="c"><h3>Asistencia de hoy · 5.º Grado A</h3>${S.filter(s=>s.g=='5.º Grado A').map(s=>`<label class="row" style="padding:6px 0"><span>${s.n}</span><input type="checkbox" style="flex:0" ${s.as?'checked':''} onchange="S.find(x=>x.n=='${s.n}').as=this.checked"></label>`).join('')}<button class="pr" onclick="toast('Asistencia guardada. Representantes notificados')">Guardar asistencia</button></div>`},
+dp(){const t=F.reduce((a,x)=>a+x.m,0),by=s=>F.filter(x=>x.st==s).reduce((a,x)=>a+x.m,0),fs=[...new Set(S.map(s=>s.f))],pc=s=>by(s)/t*100;
+return `<div class="g"><div class="c"><div class="mu">Facturado</div><div class="k">${mon(t)}</div></div><div class="c"><div class="mu">Cobrado</div><div class="k ok">${mon(by('pagado'))}</div></div><div class="c"><div class="mu">Deuda en mora</div><div class="k er">${mon(by('mora'))}</div></div><div class="c"><div class="mu">Por verificar</div><div class="k wn">${mon(by('revision'))}</div></div></div>
+<div class="c" style="margin-top:12px"><div class="bar"><i style="width:${pc('pagado')}%;background:var(--ok)"></i><i style="width:${pc('revision')}%;background:var(--wn)"></i><i style="width:${pc('mora')}%;background:var(--er)"></i></div></div>
+<div class="c"><h3>Estado por familia</h3><table><tr><th>Familia</th><th>Deuda en mora</th><th>Estado</th><th></th></tr>${fs.map(f=>`<tr><td>${f}</td><td>${mon(F.filter(x=>S[x.s].f==f&&x.st=='mora').reduce((a,x)=>a+x.m,0))}</td><td><span class="t ${fam(f)[0]}">${fam(f)[1]}</span></td><td><button onclick="toast('Recordatorio enviado a familia ${f}')">Recordar</button></td></tr>`).join('')}</table></div>`},
+ver(){const p=F.map((f,i)=>[f,i]).filter(x=>x[0].st=='revision');return `<div class="c"><h3>Pagos reportados</h3>${p.map(([x,i])=>`<div class="row" style="padding:8px 0;border-bottom:1px solid var(--bd)"><span>${S[x.s].n} · ${x.c}<br><span class="mu">${x.mt} · ref. ${x.ref} · ${mon(x.m)}</span></span><button class="pr" style="flex:0" onclick="vf(${i},this)">Verificar con banco</button></div>`).join('')||'<p class="mu">No hay pagos pendientes de verificación.</p>'}<p class="mu">Demo: la verificación simula la consulta a la API del banco por número de referencia.</p></div>`},
+cfg(){return `<div class="c"><h2>Configuración de la institución</h2><div class="row"><div><label class="mu">Nombre</label><input id="cn" value="${inst.n}"></div><div><label class="mu">Color principal</label><input id="cc" type="color" value="${inst.c}"></div></div>
+<label class="mu">URL del video de fondo (login)</label><input id="cv" value="${inst.v}" placeholder="https://.../video.mp4" style="margin-bottom:8px">
+<div class="row"><div><label class="mu">Capacidad de usuarios</label><input id="ck" type="number" value="${inst.cap}"></div><label><input type="checkbox" id="cr" style="width:auto" ${inst.rc?'checked':''}> Emitir recibos tras verificar</label></div>
+<p class="mu">Uso: 4 de ${inst.cap} usuarios · Escala 1–20 · mínimo aprobatorio 10 · 3 lapsos</p><button class="pr" onclick="sv()">Guardar cambios</button></div>`}};
+const y0=n=>new Date(cm.getFullYear(),cm.getMonth()+n,1);
+function send(){const t=$('#tx').value.trim();if(!t)return;AR[ca].push(['me',t]);shell();const k=ca;setTimeout(()=>{AR[k].push(['o','Recibido, le responderemos a la brevedad.']);if(view=='cha'&&ca==k)shell()},1200)}
+function gn(n,v){const s=S.find(x=>x.n==n);v=+v;if(v<1||v>20){toast('La nota debe estar entre 1 y 20');return shell()}s.N['Matemática'][lap-1]=v}
+function addM(){const d=$('#md').value.trim();if(!d)return toast('Escribe el detalle del método');M.push({t:$('#mt').value,d});shell();toast('Método guardado')}
+function pub(){const t=$('#pt').value.trim();if(!t)return toast('Escribe un título');P.unshift({t,x:$('#px').value,g:$('#pg').value,d:'hoy'});shell();toast('Publicado')}
+function rep(i){if(!M.length)return toast('Primero agrega un método de pago');modal(`<h3>Reportar pago · ${F[i].c}</h3><label class="mu">Método usado</label><select id="rm">${M.map(m=>`<option>${m.t} — ${m.d}</option>`).join('')}</select><label class="mu">Número de referencia</label><input id="rr" placeholder="Ej. 48210377"><div class="row" style="margin-top:12px"><button onclick="cl()">Cancelar</button><button class="pr" onclick="rp(${i})">Enviar para verificación</button></div>`)}
+function rp(i){const r=$('#rr').value.trim();if(!r)return toast('Falta la referencia');Object.assign(F[i],{st:'revision',ref:r,mt:$('#rm').value.split(' — ')[0]});cl();shell();toast('Pago enviado a verificación')}
+function vf(i,b){b.textContent='Consultando banco…';setTimeout(()=>{F[i].st='pagado';if(inst.rc)F[i].rcp='REC-'+(1100+i);shell();toast('Pago verificado'+(inst.rc?' · recibo emitido':''))},900)}
+function rec(i){const x=F[i];modal(`<h3>Recibo ${x.rcp}</h3><p>${inst.n}<br>Estudiante: ${S[x.s].n}<br>Concepto: ${x.c}<br>Monto: <b>${mon(x.m)}</b><br>Estado: Pago verificado</p><div class="row"><button onclick="window.print()">Imprimir</button><button class="pr" onclick="cl()">Cerrar</button></div>`)}
+function sv(){inst.n=$('#cn').value;inst.c=$('#cc').value;inst.v=$('#cv').value;inst.cap=+$('#ck').value;inst.rc=$('#cr').checked;document.documentElement.style.setProperty('--p',inst.c);shell();toast('Cambios guardados')}
+login();
+</script></body></html>
