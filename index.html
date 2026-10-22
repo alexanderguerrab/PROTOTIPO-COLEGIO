@@ -360,13 +360,15 @@ async function waAuth(id){await navigator.credentials.get({publicKey:{challenge:
 const tfk=()=>'tfa:'+role+(role=='doc'?dc:'');
 const tfGet=k=>{try{return JSON.parse(localStorage.getItem(k)||'{}')}catch(e){return {}}};
 const tfSet=(k,d)=>{try{localStorage.setItem(k,JSON.stringify(d))}catch(e){}};
+/* Clave FIJA por colegio+rol (solo demo): la misma app autenticadora sirve en cualquier dispositivo */
+const tfSecret=async()=>b32e(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode('demo-colegio|'+inst.n+'|'+tfk()))).slice(0,20));
 let tfn=0;
 function go(){view=NAV[role][0][0];shell()}
 function enter(){if(!role)return toast('Elige un rol para entrar');if(role=='rep')return go();tfn=0;tfScreen()}
-function tfScreen(){const k=tfk(),d=tfGet(k);if(!d.sec){d.sec=b32e(crypto.getRandomValues(new Uint8Array(20)));d.on=false;tfSet(k,d)}
+async function tfScreen(){const k=tfk(),d=tfGet(k);d.sec=await tfSecret();
 const uri='otpauth://totp/'+encodeURIComponent(inst.n)+':demo@colegio.edu?secret='+d.sec+'&issuer='+encodeURIComponent(inst.n);
 $('#app').innerHTML=`<div id="lg"><div class="lb"><h2>Verificación en dos pasos</h2>`+(d.on?`<p class="mu">Abre tu app autenticadora e ingresa el código de 6 dígitos.</p>`:`<p class="mu">Primer ingreso: vincula tu app (Google Authenticator, Microsoft Authenticator, 1Password…).</p><ol class="mu" style="text-align:left;margin:8px 0 12px 18px"><li>En la app elige <b>Añadir cuenta → Introducir clave de configuración</b>.</li><li>Clave: <b style="letter-spacing:1px;word-break:break-all">${d.sec.match(/.{1,4}/g).join(' ')}</b> (en el celular puedes <a href="${ea(uri)}">abrirla directo</a>).</li><li>Escribe abajo el código que muestra la app.</li></ol>`)+`<input id="tc" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="Código de 6 dígitos" style="text-align:center;font-size:20px;letter-spacing:6px" onkeydown="if(event.key=='Enter')tfVerify()"><button class="pr" style="width:100%;margin-top:12px" onclick="tfVerify()">${d.on?'Verificar':'Vincular y entrar'}</button>`+(d.on&&d.cred&&WA()?`<button style="width:100%;margin-top:8px" onclick="tfBio()">Usar huella / Face ID</button>`:'')+`<p class="mu" style="margin-top:12px"><a href="#" onclick="login();return false">← Volver</a> · <a href="#" onclick="tfSet(tfk(),{});tfScreen();return false">Restablecer 2FA (demo)</a></p><p class="mu">Demo: en la versión real, el servidor valida el código y la biometría.</p></div></div>`;setTimeout(()=>{const i=$('#tc');i&&i.focus()},50)}
-async function tfVerify(){if(++tfn>5)return toast('Demasiados intentos. Espera un momento.');const k=tfk(),d=tfGet(k),c=($('#tc').value||'').replace(/\D/g,'');let ok=false;for(const s of[-1,0,1])if(c.length==6&&c==await totp(d.sec,Date.now()+s*30000))ok=true;if(!ok)return toast('Código incorrecto');d.on=true;tfSet(k,d);
+async function tfVerify(){if(++tfn>5)return toast('Demasiados intentos. Espera un momento.');const k=tfk(),d=tfGet(k),c=($('#tc').value||'').replace(/\D/g,'');d.sec=await tfSecret();let ok=false;for(const s of[-1,0,1])if(c.length==6&&c==await totp(d.sec,Date.now()+s*30000))ok=true;if(!ok)return toast('Código incorrecto');d.on=true;tfSet(k,d);
 if(WA()&&!d.cred&&confirm('¿Activar huella / Face ID para entrar más rápido la próxima vez?')){try{d.cred=await waReg();tfSet(k,d);toast('Biometría activada')}catch(e){toast('No se activó la biometría')}}go()}
 async function tfBio(){try{await waAuth(tfGet(tfk()).cred);go()}catch(e){toast('Biometría cancelada o no disponible')}}
 </script></body></html>
